@@ -10,7 +10,7 @@ from PIL import Image
 from pydantic import BaseModel
 from ultralytics import YOLO
 
-from app.class_map import INDEX_TO_LABEL, MODEL_IMGSZ, MODEL_WEIGHTS
+from app.constants import INDEX_TO_LABEL, MODEL_IMGSZ, MODEL_WEIGHTS
 
 DEVICE = os.getenv("DEVICE", "auto")  # "cpu" | "cuda" | "mps" | "auto"
 
