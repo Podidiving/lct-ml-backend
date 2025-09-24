@@ -1,6 +1,6 @@
-fastapi
-uvicorn[standard]
-pillow
-torch
-torchvision
-ultralytics
+fastapi==0.117.1
+uvicorn[standard]==0.37.0
+pillow==11.3.0
+ultralytics==8.3.203
+torch==2.8.0
+torchvision==0.23.0
