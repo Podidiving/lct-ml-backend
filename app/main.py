@@ -82,6 +82,7 @@ class ClassifyRequest(BaseModel):
 
 class ClassifyResponse(BaseModel):
     label: str
+    confidence: float
 
 
 _model: Optional[YOLO] = None
@@ -160,4 +161,4 @@ def classify(req: ClassifyRequest):
             status_code=500, detail=f"Нет маппинга для индекса {top_idx}"
         )
 
-    return ClassifyResponse(label=label)
+    return ClassifyResponse(label=label, confidence=float(r0.probs.top1conf.item()))
