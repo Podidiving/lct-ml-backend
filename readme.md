@@ -20,3 +20,8 @@ docker run --rm -p 8123:8123 yolov11-cls:cpu
 docker build -t yolov11-cls:gpu -f Dockerfile-gpu .
 docker run --rm -p 8123:8123 --gpus all yolov11-cls:gpu
 ```
+
+
+### Тестирование
+
+`python send_request.py --image assets/example_tree.jpg`
