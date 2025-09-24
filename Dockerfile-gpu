@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+FROM nvidia/cuda:12.6.3-cudnn-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -14,15 +14,15 @@ WORKDIR /app
 
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir \
-    torch==2.4.1+cu121 \
-    torchvision==0.19.1+cu121 \
-    --index-url https://download.pytorch.org/whl/cu121
+    torch==2.8.0+cu126 \
+    torchvision==0.23.0+cu126 \
+    --index-url https://download.pytorch.org/whl/cu126
 
 RUN pip install --no-cache-dir \
-    fastapi==0.115.0 \
-    uvicorn[standard]==0.30.6 \
-    pillow==10.4.0 \
-    ultralytics==8.3.50
+    fastapi==0.117.1 \
+    uvicorn[standard]==0.37.0 \
+    pillow==11.3.0 \
+    ultralytics==8.3.203
 
 COPY app /app/app
 
