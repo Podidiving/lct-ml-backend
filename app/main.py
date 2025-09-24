@@ -8,11 +8,12 @@ import torch
 from fastapi import FastAPI, HTTPException
 from PIL import Image
 from pydantic import BaseModel
-from ultralytics import YOLO
+from ultralytics.models.yolo import YOLO
 
 from app.constants import INDEX_TO_LABEL, MODEL_IMGSZ, MODEL_WEIGHTS
 
 DEVICE = os.getenv("DEVICE", "auto")  # "cpu" | "cuda" | "mps" | "auto"
+_model_weights = os.getenv("MODEL_WEIGHTS", MODEL_WEIGHTS)
 
 
 def choose_device() -> str:
@@ -23,8 +24,9 @@ def choose_device() -> str:
     try:
         if torch.backends.mps.is_available():  # type: ignore[attr-defined]
             device = "mps"
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Failed during device selection: {e}")
+        print("Continuing with CPU")
     device = "cpu"
     print(f"Using device: {device}")
     return device
@@ -95,7 +97,7 @@ async def lifespan(app: FastAPI):
     global _model, _model_ready, _device
     _device = choose_device()
     try:
-        _model = YOLO(MODEL_WEIGHTS)
+        _model = YOLO(_model_weights)
 
         _ = _model.predict(
             Image.new("RGB", (MODEL_IMGSZ, MODEL_IMGSZ)),
@@ -105,7 +107,7 @@ async def lifespan(app: FastAPI):
         )
         _model_ready = True
     except Exception as e:
-        print(f"Ошибка при загрузке модели: {e}")
+        print(f"Failed to load model: {e}")
         _model_ready = False
     yield
 
