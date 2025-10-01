@@ -27,8 +27,8 @@ INDEX_TO_LABEL = {
     21: "Viburnum",
 }
 DETECTOR_INDEX_TO_LABEL = {
-    0: "Crack",
-    1: "Duplo",
-    2: "Gnil",
-    3: "Yazva",
+    0: "Трещина",
+    1: "Дупло",
+    2: "Гниль",
+    3: "Язва",
 }
