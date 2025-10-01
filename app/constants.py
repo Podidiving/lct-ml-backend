@@ -1,5 +1,7 @@
 MODEL_IMGSZ = 256
+DETECTOR_IMGSZ = 860
 MODEL_WEIGHTS = "/app/app/weights/classify.pt"
+DETECTOR_WEIGHTS = "/app/app/weights/fine.pt"
 INDEX_TO_LABEL = {
     0: "Acer",
     1: "Alnus",
@@ -23,4 +25,11 @@ INDEX_TO_LABEL = {
     19: "Tilia",
     20: "Ulmus",
     21: "Viburnum",
+}
+DETECTOR_INDEX_TO_LABEL = {
+    0: "Crack",
+    1: "Duplo",
+    2: "Treschina",
+    3: "Plodovoe_telo",
+    4: "Gnil",
 }

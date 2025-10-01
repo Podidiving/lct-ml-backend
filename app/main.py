@@ -10,10 +10,18 @@ from PIL import Image
 from pydantic import BaseModel
 from ultralytics.models.yolo import YOLO
 
-from app.constants import INDEX_TO_LABEL, MODEL_IMGSZ, MODEL_WEIGHTS
+from app.constants import (
+    DETECTOR_IMGSZ,
+    DETECTOR_INDEX_TO_LABEL,
+    DETECTOR_WEIGHTS,
+    INDEX_TO_LABEL,
+    MODEL_IMGSZ,
+    MODEL_WEIGHTS,
+)
 
 DEVICE = os.getenv("DEVICE", "auto")  # "cpu" | "cuda" | "mps" | "auto"
 _model_weights = os.getenv("MODEL_WEIGHTS", MODEL_WEIGHTS)
+_detector_weights = os.getenv("DETECTOR_WEIGHTS", DETECTOR_WEIGHTS)
 
 
 def choose_device() -> str:
@@ -87,7 +95,31 @@ class ClassifyResponse(BaseModel):
     confidence: float
 
 
+class ImageKeyPair(BaseModel):
+    key: str
+    image_base64: str
+
+
+class DetectionRequest(BaseModel):
+    requests: list[ImageKeyPair]
+
+
+class ObjectBoxResponse(BaseModel):
+    key: str
+    label: str
+    confidence: float
+    x1: int
+    y1: int
+    x2: int
+    y2: int
+
+
+class DetectionResponse(BaseModel):
+    results: list[ObjectBoxResponse]
+
+
 _model: Optional[YOLO] = None
+_detector: Optional[YOLO] = None
 _model_ready: bool = False
 _device: str = choose_device()
 
@@ -98,10 +130,17 @@ async def lifespan(app: FastAPI):
     _device = choose_device()
     try:
         _model = YOLO(_model_weights)
+        _detector = YOLO(_detector_weights)
 
         _ = _model.predict(
             Image.new("RGB", (MODEL_IMGSZ, MODEL_IMGSZ)),
             imgsz=MODEL_IMGSZ,
+            verbose=False,
+            device=_device,
+        )
+        _ = _detector.predict(
+            Image.new("RGB", (DETECTOR_IMGSZ, DETECTOR_IMGSZ)),
+            imgsz=DETECTOR_IMGSZ,
             verbose=False,
             device=_device,
         )
@@ -112,6 +151,7 @@ async def lifespan(app: FastAPI):
     yield
 
     _model = None
+    _detector = None
     _model_ready = False
 
 
@@ -139,7 +179,7 @@ def classify(req: ClassifyRequest):
     if len(INDEX_TO_LABEL) == 0:
         raise HTTPException(
             status_code=500,
-            detail="Пустой маппинг классов INDEX_TO_LABEL. Заполните app/class_map.py",
+            detail="Пустой маппинг классов INDEX_TO_LABEL. Заполните app/constants.py",
         )
 
     global _model
@@ -164,3 +204,48 @@ def classify(req: ClassifyRequest):
         )
 
     return ClassifyResponse(label=label, confidence=float(r0.probs.top1conf.item()))
+
+
+@app.post("/detect", response_model=DetectionResponse)
+def detect(req: DetectionRequest):
+    if len(DETECTOR_INDEX_TO_LABEL) == 0:
+        raise HTTPException(
+            status_code=500,
+            detail="Пустой маппинг классов DETECTOR_INDEX_TO_LABEL. Заполните app/constants.py",
+        )
+
+    global _detector
+    responses: list[ObjectBoxResponse] = []
+
+    for pair in req.requests:
+        img = decode_base64_image(pair.image_base64)
+
+        results = _detector.predict(
+            img, imgsz=DETECTOR_IMGSZ, verbose=False, device=_device
+        )
+        if not results:
+            continue
+
+        r0 = results[0]
+        if r0.boxes is None:
+            continue
+
+        for box in r0.boxes:
+            cls_id = int(box.cls.item())
+            label = DETECTOR_INDEX_TO_LABEL.get(cls_id)
+            if label is None:
+                continue
+            conf = float(box.conf.item())
+            x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
+            responses.append(
+                ObjectBoxResponse(
+                    key=pair.key,
+                    label=label,
+                    confidence=conf,
+                    x1=x1,
+                    y1=y1,
+                    x2=x2,
+                    y2=y2,
+                )
+            )
+    return DetectionResponse(results=responses)
