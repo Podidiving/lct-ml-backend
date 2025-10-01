@@ -29,7 +29,6 @@ INDEX_TO_LABEL = {
 DETECTOR_INDEX_TO_LABEL = {
     0: "Crack",
     1: "Duplo",
-    2: "Treschina",
-    3: "Plodovoe_telo",
-    4: "Gnil",
+    2: "Gnil",
+    3: "Yazva",
 }
