@@ -126,7 +126,7 @@ _device: str = choose_device()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _model, _model_ready, _device
+    global _model, _model_ready, _device, _detector
     _device = choose_device()
     try:
         _model = YOLO(_model_weights)
@@ -148,6 +148,7 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"Failed to load model: {e}")
         _model_ready = False
+
     yield
 
     _model = None

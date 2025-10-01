@@ -1,5 +1,5 @@
 MODEL_IMGSZ = 256
-DETECTOR_IMGSZ = 860
+DETECTOR_IMGSZ = 864
 MODEL_WEIGHTS = "/app/app/weights/classify.pt"
 DETECTOR_WEIGHTS = "/app/app/weights/fine.pt"
 INDEX_TO_LABEL = {
