@@ -2,7 +2,9 @@
 
 ### Сборка и запуск
 
-в `app/weights` поместить `.pt` файл (как он называется указано в `app/constants.py`)
+в `app/weights` поместить `.pt` файлы (указано в `app/constants.py`)
+
+Ссылка на скачивание: TBD (разместим после)
 
 #### CPU
 
@@ -13,8 +15,6 @@ docker run --rm -p 8123:8123 yolov11-cls:cpu
 
 
 #### GPU
-
-(не тестилось, мб надо будет поправить библиотекик)
 
 ```bash
 docker build -t yolov11-cls:gpu -f Dockerfile-gpu .
