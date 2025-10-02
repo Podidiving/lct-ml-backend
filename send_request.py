@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 import requests
 
 API_URL = "http://localhost:8123/classify"
+DETECT_URL = "http://localhost:8123/detect"
 
 
 def image_to_base64(path: str) -> str:
@@ -24,6 +25,15 @@ def classify_image(image_path: str, x1=None, y1=None, x2=None, y2=None):
     return resp.json()
 
 
+def detect_image(image_path: str):
+    img_b64 = image_to_base64(image_path)
+    payload = {"requests": [{"image_base64": img_b64, "key": "key"}]}
+
+    resp = requests.post(DETECT_URL, json=payload, timeout=60)
+    resp.raise_for_status()
+    return resp.json()
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--image", required=True, help="Path to the image file")
@@ -31,6 +41,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     image_path = args.image
 
-    result = classify_image(image_path)
+    result = detect_image(image_path)
+    print("Результат детекции:", json.dumps(result, ensure_ascii=False, indent=2))
 
-    print("Результат:", json.dumps(result, ensure_ascii=False, indent=2))
+    result = classify_image(image_path)
+    print("Результат классификации:", json.dumps(result, ensure_ascii=False, indent=2))
