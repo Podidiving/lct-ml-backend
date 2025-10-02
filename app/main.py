@@ -108,10 +108,10 @@ class ObjectBoxResponse(BaseModel):
     key: str
     label: str
     confidence: float
-    x1: int
-    y1: int
-    x2: int
-    y2: int
+    x1: float
+    y1: float
+    x2: float
+    y2: float
 
 
 class DetectionResponse(BaseModel):
@@ -220,6 +220,7 @@ def detect(req: DetectionRequest):
 
     for pair in req.requests:
         img = decode_base64_image(pair.image_base64)
+        img_width, img_height = img.size
 
         results = _detector.predict(
             img, imgsz=DETECTOR_IMGSZ, verbose=False, device=_device
@@ -237,16 +238,23 @@ def detect(req: DetectionRequest):
             if label is None:
                 continue
             conf = float(box.conf.item())
-            x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
+            x1, y1, x2, y2 = box.xyxy[0].tolist()
+            
+            # Convert to relative coordinates (0.0 to 1.0)
+            rel_x1 = x1 / img_width
+            rel_y1 = y1 / img_height
+            rel_x2 = x2 / img_width
+            rel_y2 = y2 / img_height
+            
             responses.append(
                 ObjectBoxResponse(
                     key=pair.key,
                     label=label,
                     confidence=conf,
-                    x1=x1,
-                    y1=y1,
-                    x2=x2,
-                    y2=y2,
+                    x1=rel_x1,
+                    y1=rel_y1,
+                    x2=rel_x2,
+                    y2=rel_y2,
                 )
             )
     return DetectionResponse(results=responses)
